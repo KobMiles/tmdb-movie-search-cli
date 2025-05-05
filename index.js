@@ -8,8 +8,9 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 async function loadConfig(filename = CONFIG_FILE) {
   try {
-    const raw = await fs.readFile(filename, 'utf8');
-    return JSON.parse(raw);
+    const configFileContent = await fs.readFile(filename, 'utf8');
+
+    return JSON.parse(configFileContent);
   } catch (err) {
     throw new Error(`Cannot read ${filename}: ${err.message}`);
   }
@@ -17,9 +18,11 @@ async function loadConfig(filename = CONFIG_FILE) {
 
 function buildUrl(endpoint, params) {
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
+
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.append(key, value);
   }
+
   return url.toString();
 }
 
@@ -30,9 +33,12 @@ async function searchMovies(query, apiKey) {
     language: 'en-US',
     include_adult: 'false',
   });
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`TMDB search error: ${res.status} ${res.statusText}`);
-  return res.json();
+
+  const response = await fetch(url);
+  if (!response.ok) 
+    throw new Error(`TMDB search error: ${response.status} ${response.statusText}`);
+
+  return response.json();
 }
 
 async function getMovieDetails(id, apiKey) {
@@ -41,9 +47,12 @@ async function getMovieDetails(id, apiKey) {
     language: 'en-US',
     append_to_response: 'videos,images',
   });
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`TMDB details error: ${res.status} ${res.statusText}`);
-  return res.json();
+
+  const response = await fetch(url);
+  if (!response.ok)
+     throw new Error(`TMDB details error: ${response.status} ${response.statusText}`);
+    
+  return response.json();
 }
 
 async function saveOutput(obj, filename = OUTPUT_FILE) {
@@ -53,7 +62,8 @@ async function saveOutput(obj, filename = OUTPUT_FILE) {
 async function main() {
   try {
     const { api_key } = await loadConfig();
-    if (!api_key) throw new Error('The field "api_key" is missing in config.json');
+    if (!api_key)
+       throw new Error('The field "api_key" is missing in config.json');
 
     const rl = readline.createInterface({ input, output });
     const searchQuery = await rl.question('Enter a movie title to search: ');
